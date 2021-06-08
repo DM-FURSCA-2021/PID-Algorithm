@@ -9,27 +9,41 @@ theta_i = 5 #initial rocket pitch offset angle
 inertia = 0.02 #TEMPORARY VALUE TO BE REPLACED WITH ACTUAL CALCULATED VALUE FOR ROCKET'S INERTIA
 time_step = 0.01 #update rate on BNO055 IMU ~10ms
 max_angle = 5 #max angle for gimbal 
-maxRotationPerStep = 20/0.1*time_step  #100ms/60deg per spec sheet, this is the max change in servo angle per step -- TO BE REPLACED WITH MAX CHANGE IN SERVO ANGLE PER TIME STEP
+maxRotationPerStep = 20/0.1*time_step  #TEMPORARY VALUE - 100ms/60deg - TO BE REPLACED WITH MEASURED VALUE
 d = 0.2 #TEMP VALUE TO BE REPLACED WITH DISTANCE BETWEEN ROCKET CENTER OF GRAVITY AND GIMBAL
+theta0 = -0*np.pi/180 #0 degree pitch target
 
-theta0 = -0*np.pi/180
+#F15 PID gains------
+#KP = 900
+#KI = 0.05
+#KD = 120
 
+#E12 PID gains------
+#KP = 520
+#KI = 0.05
+#KD = 55
 
-#PID gains------
-KP = 900
-KI = 0.05
-KD = 120
+#D12 PID gains------
+#KP = 890
+#KI = 0.05
+#KD = 110
+
+#F10 PID gains------
+KP = 50
+KI = 0.001
+KD = 5
+
 
 theta = np.zeros(sim_time) #rocket pitch angle
 time = [i*10 for i in range(sim_time)]
 torque = np.zeros(sim_time)
 gimbal_angle = np.zeros(sim_time) #gimbal angle
 
-theta[0] = theta_i*pi/180.   #must be in radians
-theta[1] = theta_i*pi/180.   #deg
+theta[0] = theta_i*pi/180. #deg to radian conversion
+theta[1] = theta_i*pi/180. 
 
 
-def forceF15(time):
+def forceF15(time): #Force function for Estes F15 motor thrust curve
     if time < 100:
         return 2.5
     elif time <200:
@@ -101,7 +115,7 @@ def forceF15(time):
     elif time < 3500:
         return 6.125
 
-def forceE12(time):
+def forceE12(time): #Force function for Estes E12 motor thrust curve
     if time < 100:
         return 5
     elif time <200:
@@ -153,7 +167,7 @@ def forceE12(time):
     elif time < 2500:
         return 2
 
-def forceD12(time):
+def forceD12(time): #Force function for Estes D12 motor thrust curve
     if time < 100:
         return 3.375
     elif time <200:
@@ -189,7 +203,7 @@ def forceD12(time):
     elif time < 1700:
         return 1.75
 
-def forceF10(time):
+def forceF10(time): #Force function for Apogee F10 motor thrust curve
     if time < 100:
         return 25.5
     elif time <200:
@@ -342,7 +356,7 @@ def PID():
     output = 0
     for n in range(2,sim_time):
 	    #update governing dynamics
-        torque[n-1] = d*forceF15(n*time_step)*sin( pi*gimbal_angle[n-1]/180)
+        torque[n-1] = d*forceF10(n*time_step)*sin( pi*gimbal_angle[n-1]/180)
 	    #using delayed torque to account for propagation time
         theta[n] = 2*theta[n-1] - theta[n-2] + torque[n-2]*time_step*time_step/inertia #+ 0.0005*numpy.random.standard_normal()
 
