@@ -478,7 +478,6 @@ int gnuplotgraph() { //Function that graphs the data collected at the very end
 
     char *GnuCommands [] = {"cd 'C:\\Users\\mdjmd\\OneDrive\\Documents\\FURSCA\\Flight Main'", "plot 'PIDdata.txt' using 1:3 with lines title 'Gimbal Angle', 'PIDdata.txt' using 1:2 with lines title 'Rocket Pitch Angle'", "set xlabel 'Time (ms)'", "set ylabel 'Angle (deg)'"};
     for (int i = 0; i < 4; i++) {
-        printf("hello");
         fprintf(gnupipe, "%s\n", GnuCommands[i]);
     }
 }
@@ -579,10 +578,9 @@ int main() {
         myfile << n*10 << "\t" << theta[n]*180/pi << "\t\t" << gimbal_angle[n] << endl;
     }
 
-    std::cout << "Sim ended" << std::endl;
+    cout << "Sim ended" << endl;
 
     myfile.close();
     gnuplotgraph();
 
 }
-
