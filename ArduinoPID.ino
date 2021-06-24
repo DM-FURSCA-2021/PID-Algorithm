@@ -10,7 +10,7 @@
 #include <utility/imumaths.h>
 
 /*INCLUDE FULL FILE PATHWAY IF THE PROGRAM CANNOT FIND THE ARDUINOPID.h FILE*/
-#include "C:\\Users\\mdjmd\\OneDrive\\Documents\\FURSCA\\Flight Main\\ArduinoPID.h"
+#include "ArduinoPID.h"
 
 using namespace std;
 
