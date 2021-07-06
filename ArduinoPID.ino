@@ -12,7 +12,6 @@
 #include "Adafruit_FRAM_I2C.h"
 #include <Adafruit_BMP280.h>
 Adafruit_BMP280 bmp;// I2C
-//#include <SPI.h>
 
 /*INCLUDE FULL FILE PATHWAY IF THE PROGRAM CANNOT FIND THE ARDUINOPID.h FILE*/
 #include "ArduinoPID.h"
@@ -41,7 +40,7 @@ Adafruit_FRAM_I2C fram     = Adafruit_FRAM_I2C(); // Activates FRAM chip
 void setup(void)//Setup function to be ran by the Arduino only once
 {
 
-  short flightStage = 2;
+  flightStage = 2;
   
   Serial.begin(115200); //Setup command to begin sending information to the Serial monitor at the baudrate specified
   
@@ -173,7 +172,7 @@ void setup(void)//Setup function to be ran by the Arduino only once
 
     fram.write8(n*22+16, altitudeFirst); //ALTITUDE
     fram.write8(n*22+17, altitudeMid);
-    fram.write8(2*22+18, altitudeLast);
+    fram.write8(n*22+18, altitudeLast);
 
     fram.write8(n*22+19, pressureFirst); //PRESSURE
     fram.write8(n*22+20, pressureMid);
@@ -259,7 +258,7 @@ void setup(void)//Setup function to be ran by the Arduino only once
   float runningSumZ = thetaZ[0]+thetaZ[1]; //Declares runningSum variable to keep track of rocket's total angle offset in Z axis
 
 
-  for (int n = 2; n <= sim_time; n++) { //Loop for actual PID algorithm math
+  for (int n = 2; n <= motor_time; n++) { //Loop for actual PID algorithm math
 
     runtime[n] = n*10; //Sets the index value in the runtime equal to the number of milliseconds that have elapsed (just like in the other for loop but for the remainder of the runtime)
 
@@ -431,7 +430,7 @@ void setup(void)//Setup function to be ran by the Arduino only once
 
     fram.write8(n*22+16, altitudeFirst); //ALTITUDE
     fram.write8(n*22+17, altitudeMid);
-    fram.write8(2*22+18, altitudeLast);
+    fram.write8(n*22+18, altitudeLast);
 
     fram.write8(n*22+19, pressureFirst); //PRESSURE
     fram.write8(n*22+20, pressureMid);
@@ -508,8 +507,6 @@ void setup(void)//Setup function to be ran by the Arduino only once
     delay(BNO055_SAMPLERATE_DELAY_MS);
     //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   }
-
-
 
 }
 
