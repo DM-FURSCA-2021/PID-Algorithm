@@ -6,7 +6,28 @@
 
 using namespace std;
 
-int forceF15(double motor_time) { //Force function for Estes F15 motor thrust curve
+int gnuplotstart(void) { //Function that resets the PIDdata.txt file in preparation for new data
+
+    FILE *fp = NULL;
+    FILE *gnupipe = NULL;
+
+    fp = fopen ("PIDdata.txt", "w");
+    return 0;
+}
+
+int gnuplotgraph() { //Function that graphs the data collected at the very end
+
+    FILE *gnupipe = NULL;
+    gnupipe = _popen("gnuplot -persistent", "w");
+
+    char *GnuCommands [] = {"cd 'C:\\Users\\mdjmd\\OneDrive\\Documents\\FURSCA\\Flight Main'", "plot 'PIDdata.txt' using 1:3 with lines title 'Gimbal Angle', 'PIDdata.txt' using 1:2 with lines title 'Rocket Pitch Angle'", "set xlabel 'Time (ms)'", "set ylabel 'Angle (deg)'"};
+    for (int i = 0; i < 4; i++) {
+        fprintf(gnupipe, "%s\n", GnuCommands[i]);
+    }
+    return 0;
+}
+
+int findForceF15(float motor_time) { //Force function for Estes F15 motor thrust curve
     if (motor_time < 100) {
         return 2.5;
     }
@@ -114,7 +135,7 @@ int forceF15(double motor_time) { //Force function for Estes F15 motor thrust cu
     }
 }
 
-int forceE12(double motor_time) {//Force function for Estes E12 motor thrust curve
+int findForceE12(float motor_time) {//Force function for Estes E12 motor thrust curve
     if (motor_time < 100) {
         return 5;
     }
@@ -192,7 +213,7 @@ int forceE12(double motor_time) {//Force function for Estes E12 motor thrust cur
     }
 }
 
-int forceD12(double motor_time) { //Force function for Estes D12 motor thrust curve
+int findForceD12(float motor_time) { //Force function for Estes D12 motor thrust curve
     if (motor_time < 100) {
         return 3.375;
     }
@@ -246,7 +267,7 @@ int forceD12(double motor_time) { //Force function for Estes D12 motor thrust cu
     }
 }
 
-int forceF10(double motor_time) { //Force function for Apogee F10 motor thrust curve
+int findForceF10(float motor_time) { //Force function for Apogee F10 motor thrust curve
     if (motor_time < 100) {
         return 25.5;
     }
@@ -462,26 +483,6 @@ int forceF10(double motor_time) { //Force function for Apogee F10 motor thrust c
     }
 }
 
-int gnuplotstart(void) { //Function that resets the PIDdata.txt file in preparation for new data
-
-    FILE *fp = NULL;
-    FILE *gnupipe = NULL;
-
-    fp = fopen ("PIDdata.txt", "w");
-    return 0;
-}
-
-int gnuplotgraph() { //Function that graphs the data collected at the very end
-
-    FILE *gnupipe = NULL;
-    gnupipe = _popen("gnuplot -persistent", "w");
-
-    char *GnuCommands [] = {"cd 'C:\\Users\\mdjmd\\OneDrive\\Documents\\FURSCA\\Flight Main'", "plot 'PIDdata.txt' using 1:3 with lines title 'Gimbal Angle', 'PIDdata.txt' using 1:2 with lines title 'Rocket Pitch Angle'", "set xlabel 'Time (ms)'", "set ylabel 'Angle (deg)'"};
-    for (int i = 0; i < 4; i++) {
-        fprintf(gnupipe, "%s\n", GnuCommands[i]);
-    }
-}
-
 int main() {
 
     //Choosing text data file to write to
@@ -491,40 +492,44 @@ int main() {
     gnuplotstart();
 
     double pi = atan(1)*4;
-    int sim_time = 350; // sim_time * time_step = how much time in s
-    double theta_i = 10.0; //initial rocket pitch offset angle
-    double inertia = 0.02; //TEMPORARY VALUE TO BE REPLACED WITH ACTUAL CALCULATED VALUE FOR ROCKET'S INERTIA
-    double time_step = 0.01; //update rate on BNO055 IMU ~10ms
-    double max_angle = 5.0; //max angle for gimbal 
-    double maxRotationPerStep = 20/0.1*time_step;  //TEMPORARY VALUE - 100ms/60deg - TO BE REPLACED WITH MEASURED VALUE
-    double d = 0.2; //TEMP VALUE TO BE REPLACED WITH DISTANCE BETWEEN ROCKET CENTER OF GRAVITY AND GIMBAL
-    double theta0 = -0*pi/180; //0 degree pitch target
+    int sim_time = 500; // sim_time * time_step = how much time in s
+    double theta_i = -15.5; //initial rocket pitch offset angle
+    double inertia = 0.07420278; //Inertia calculated for our specific rocket
+    double time_step = 0.013; //update rate on BNO055 IMU ~10ms
+    double max_angle = 8.0; //max angle for gimbal 
+    double maxRotationPerStep = 20/0.1*time_step;  //Maximum value servo can turn between time steps
+    double d = 0.52; //Distance between rocket's center of mass and thrust output
+    double theta0 = 0; //0 degree pitch target
 
     //F15 PID gains------
-    double KP = 900.0;
-    double KI = 0.05;
-    double KD = 120.0;
+    // double KP = 900;
+    // double KI = 0.05;
+    // double KD = 210;
 
     //E12 PID gains------
-    // double KP = 520.0;
-    // double KI = 0.05;
-    // double KD = 55.0;
+    double KP = 170;
+    double KI = 0.05;
+    double KD = 29;
+
+    // double KP = 170;
+    // double KI = 0.00005;
+    // double KD = 3.8;
 
     //D12 PID gains------
     // double KP = 890.0;
     // double KI = 0.05;
     // double KD = 110.0;
 
-    //F10 PID gains------
-    //double KP = 50.0;
-    //double KI = 0.001;
-    //double KD = 5.0;
+    // F10 PID gains------
+    // double KP = 50.0;
+    // double KI = 0.001;
+    // double KD = 5.0;
 
 
     double theta[sim_time]; //rocket pitch angle
-    double time[sim_time];
+    double runtime[sim_time];
     for (int i = 0; i <= sim_time; i++) {
-        time[i] = i*10;
+        runtime[i] = i*10;
     }
     double torque[sim_time];
     double gimbal_angle[sim_time]; //gimbal angle
@@ -532,7 +537,8 @@ int main() {
     theta[0] = theta_i*pi/180; //deg to radian conversion
     theta[1] = theta_i*pi/180; 
 
-    double runningSum = theta[0]+theta[1];
+    //double runningSum = theta[0]+theta[1];
+    float error[2];
     double proportional_error = 0.0;
     double integral_error = 0.0;
     double derivative_error = 0.0;
@@ -541,19 +547,22 @@ int main() {
 
 
     for (int n = 2; n <= sim_time; n++) {
+
+        error[1] = error[0];
 	    //update governing dynamics
-        torque[n-1] = d*forceF15(n*time_step)*sin( pi*gimbal_angle[n-1]/180);
+        torque[n-1] = d*findForceE12(n*time_step)*sin( pi*gimbal_angle[n-1]/180);
 	    //using delayed torque to account for propagation time
-        theta[n] = 2*theta[n-1] - theta[n-2] + torque[n-2]*time_step*time_step/inertia; //+ 0.0005*numpy.random.standard_normal()
+        theta[n] = 2*theta[n-1] - theta[n-2] + torque[n-2]*time_step*time_step/inertia;
 
 	    //PID control
-        runningSum = runningSum + (theta[n]-theta0);
+        //runningSum = runningSum + (theta0-theta[n]);
+        error[0] = theta0 - theta[n];
 
-        proportional_error = theta[n]-theta0;
-        integral_error = runningSum;
-        derivative_error = (theta[n]-theta[n-1])/time_step;
+        proportional_error = theta0-theta[n];
+        integral_error = error[0] * time_step;
+        derivative_error = (error[0] - error[1])/time_step;
 
-        output = - KP*proportional_error - KI*integral_error - KD*derivative_error;
+        output = + KP*proportional_error + KI*integral_error + KD*derivative_error;
         //output = - KP*(theta[n]-theta0) - KD*(theta[n]-theta[n-1])/time_step - KI*runningSum*time_step
         if ((output - gimbal_angle[n-1]) > maxRotationPerStep) {
             gimbal_angle[n] = gimbal_angle[n-1] + maxRotationPerStep;
